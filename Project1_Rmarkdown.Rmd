@@ -143,4 +143,4 @@ ggplot(data = meanStepsByDay, aes(x = interval, y = steps)) +
   
 ```
 
-Answers: new mean is the same as old with 10766.19, but the median changed by 1.19 to now be the same value as the mean. It seems as though the weekday to weekend is different particularly with earlier movement during weekdays and greater peaks in early intervals, but the activity seems to be steady throughout the day on weekends with potentially more area under the curve. 
+Answers: New mean is the same as old with 10766.19, but the median changed by 1.19 to now be the same value as the mean. It seems as though the weekday to weekend is different particularly with earlier movement during weekdays and greater peaks in early intervals, but the activity seems to be steady throughout the day on weekends with potentially more area under the curve. 
