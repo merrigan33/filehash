@@ -2,14 +2,16 @@
 title: "Project1"
 author: "Justin"
 date: "6/24/2020"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
 ---
 
 The data came in a zip folder. For easiest upload, directly unzip the folder here and then 
 read in the .csv file named activity. 
 
 ```{r load}
-setwd("~/filehash")
 if (!file.exists('activity.csv')) {
   unzip(zipfile = "repdata_data_activity.zip")
 }
@@ -77,47 +79,44 @@ Devise a strategy for filling in all of the missing values in the dataset. The s
 Create a new dataset that is equal to the original dataset but with the missing data filled in.
 Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r pressure, echo=FALSE}
-
-# Calculate and report the total number of missing values in the dataset
-# First we can find all na vlues by using is.na function, then find the sum of values. 
-missingVals <- is.na(activityData$steps)
-SumNA = sum(missingVals)
-
-# Find the NA positions
-LocateNA = which(is.na(activityData$steps))
-
-# Create a vector of means
-MeanSteps = rep(mean(activityData$steps, na.rm=TRUE), times=length(LocateNA))
-
-# We use the strategy to remplace each NA value by the mean of the steps attribute.
-# Create a new dataset that is equal to the original dataset but with the missing data filled in.
-# Replace the NAs by the means
-activityData[LocateNA, "steps"] = MeanSteps
-
+```{r Fill Data, echo=TRUE}
+# for the filling I am going to use the mean instead of the missing value
+# First I will merge the original data with the average by interval data
+# replace missig values w
+activityData_Fill <- activityData
+for(r in 1:nrow(activityData_Fill)){
+  if (is.na(activityData_Fill$steps[r])) {
+    repl <- Mean_StepsPer5min$steps[Mean_StepsPer5min$interval == activityData_Fill$interval[r]];
+    activityData_Fill$steps[r] <- repl;
+  }
+}
+# we verify it worked
+sum(is.na(activityData_Fill$steps))
+colSums(is.na(activityData_Fill))
+str(activityData_Fill$steps)
 ```
-
 Are there differences in activity patterns between weekdays and weekends?
 For this part the \color{red}{\verb|weekdays()|}weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 
 Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-```{r pressure, echo=FALSE}
+```{r Step 4, echo=True}
 # Make a histogram of the total number of steps taken each day and
 # and report the mean and median.
-StepsPer5min <- aggregate(steps ~ date, activityData, FUN=sum)
-hist(activityData$steps,
+StepsPer5min <- aggregate(steps ~ date, activityData_Fill, sum)
+hist(StepsPer5min$steps,
      main = "Imputed Number of Steps Per Day",
-     breaks=seq(from=0, to=25000, by=1000),
+     breaks = seq(from=0, to=25000, by=1000),
      col="black", 
      xlab="Total number of steps", 
      ylim=c(0, 30),
 )
-impMeanSteps <- mean(StepsPer5min$steps, na.rm = TRUE)
-impMedSteps <- median(StepsPer5min$steps, na.rm = TRUE)
-diffMean = impMeanSteps - Steps_mean
-diffMed = impMedSteps - Steps_median
+
+MeanStepsFilled <- mean(StepsPer5min$steps, na.rm = TRUE)
+MedianStepsFilled <- median(StepsPer5min$steps, na.rm = TRUE)
+diffMean = MeanStepsFilled - Steps_mean
+diffMedian = MedianStepsFilled - Steps_median
 diffTotal = sum(StepsPer5min$steps) - sum(StepsPerDay$steps)
 # There is a difference of 0 in the mean steps of the two dataset. There is a difference of -1.076381110^{4} in the median steps of the two dataset. There is a difference of 8.612950910^{4} in the total steps of the two dataset.
 
@@ -139,7 +138,7 @@ activityData$day <- sapply(activityData$date, FUN = DayType)
 # and the average number of steps taken across all weekdays or weekends
 meanStepsByDay <- aggregate(steps ~ interval + day, activityData, mean)
 ggplot(data = meanStepsByDay, aes(x = interval, y = steps)) + 
-  geom_line() +
+  geom_line(color = "royalblue") +
   facet_grid(day ~ .) +
   ggtitle("Average Daily Activity Pattern") +
   xlab("5-minute Interval") +
